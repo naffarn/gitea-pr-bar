@@ -1,0 +1,6 @@
+{
+  "name": "gitea-pr-bar",
+  "description": "A Claude Code mod that shows and manages Gitea pull requests above the prompt.",
+  "owner": { "name": "Nathan Cairns" },
+  "plugins": [{ "name": "gitea-pr-bar", "source": "./" }]
+}

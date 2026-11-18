@@ -1,0 +1,15 @@
+.claude-plugin/types/
+.agents/
+.aws/
+.claude/
+.codex/
+.env
+.env.*
+!.env.example
+node_modules/
+coverage/
+dist/
+.DS_Store
+*.log
+*.key
+*.pem

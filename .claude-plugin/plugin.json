@@ -1,0 +1,8 @@
+{
+  "name": "gitea-pr-bar",
+  "version": "0.1.0",
+  "description": "A PR bar above the prompt for Gitea pull requests: state, checks, reviews, merge, Auto-fix and Auto-merge.",
+  "author": { "name": "Nathan Cairns" },
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}
