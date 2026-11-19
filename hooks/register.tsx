@@ -699,13 +699,9 @@ export const register: Register = on => {
 
     // A state with something to do about it is its button; a state with
     // nothing to do is a word. The icon says open, draft, merged or closed.
+    const question = `Merge into ${pr.base}${pr.deletesBranch ? ' and delete the branch' : ''}?`
     const words = isConfirming
-      ? [
-          {
-            label: `Merge into ${pr.base}${pr.deletesBranch ? ' and delete the branch' : ''}?`,
-            color: 'text' as const,
-          },
-        ]
+      ? []
       : shown([
           isLive && checksLine(pr.checks),
           isLive && pr.review === 'approved' && REVIEW.approved,
@@ -756,19 +752,25 @@ export const register: Register = on => {
               onPress: set({ isConfirmingMerge: true }),
             },
         ])
-    const head = fit(
-      pr.head,
-      size.icon + gap + size.text(`#${pr.number}`) + gap + size.text(pr.repo) + gap,
-      [
-        ...(lastError === '' ? [] : [size.text('⚠ Not updated')]),
-        ...(pr.comments > 0
-          ? [size.icon + gap + size.text(String(pr.comments))]
-          : []),
-        ...words.map(one => size.text(one.label)),
-        ...actions.map(one => size.text(labelOf(one)) + size.button),
-        size.menu,
-        size.close,
-      ],
+    const left = size.icon + gap + size.text(`#${pr.number}`) + gap + size.text(pr.repo) + gap
+    const right = [
+      ...(lastError === '' ? [] : [size.text('⚠ Not updated')]),
+      ...(pr.comments > 0 ? [size.icon + gap + size.text(String(pr.comments))] : []),
+      ...actions.map(one => size.text(labelOf(one)) + size.button),
+      size.menu,
+      size.close,
+    ]
+    const head = fit(pr.head, left, [
+      ...(isConfirming ? [size.text(question)] : []),
+      ...words.map(one => size.text(one.label)),
+      ...right,
+    ])
+    // Once the branch is down to its least, the question gives way, never the
+    // buttons that answer it.
+    const asked = clipTo(
+      question,
+      roomFor(left + head.length * size.char + size.chip + gap, right),
+      size.text,
     )
 
     // The PR's details open as one more row inside the band, above its own.
@@ -891,6 +893,12 @@ export const register: Register = on => {
             <Box flexDirection="row" alignItems="center" gap={gap}>
               {svg(COMMENT_SVG, 'Review comments') ?? <Text dimColor>✎</Text>}
               <Text bold>{String(pr.comments)}</Text>
+            </Box>
+          )}
+          {isConfirming && (
+            <Box flexShrink={0} position="relative">
+              <Text>{asked}</Text>
+              {tip(question, asked, size.text(asked))}
             </Box>
           )}
           {words.map(one => (

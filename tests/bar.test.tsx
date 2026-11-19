@@ -250,6 +250,35 @@ test('Merge asks first, then merges the repository’s own way', async ($, on) =
   await ui.unmount()
 })
 
+test('a narrow row cuts the merge question, never its Confirm and Cancel', async ($, on) => {
+  const w = world(on)
+  await start($)
+  await w.clock.settle()
+
+  const question = 'Merge into main and delete the branch?'
+  const askedAt = async (bodyColumns: number) => {
+    const ui = await $.ui.mount({ ...BAND, surface: 'desktop', props: { ...BAND.props, bodyColumns } })
+    await ui.press({ key: 'merge' })
+    const asked = (await ui.find({ type: 'Text', text: 'Merge into' }))?.text ?? ''
+    const tips = (await ui.findAll({ type: 'Svg' })).length
+    for (const key of ['confirm-merge', 'cancel-merge']) {
+      expect(await ui.find({ key })).toBeDefined()
+    }
+    await ui.press({ key: 'cancel-merge' })
+    await ui.unmount()
+
+    return { asked, tips }
+  }
+
+  const wide = await askedAt(120)
+  expect(wide.asked).toBe(question)
+  const narrow = await askedAt(70)
+  expect(narrow.asked.endsWith('…')).toBe(true)
+  expect(question.startsWith(narrow.asked.slice(0, -1))).toBe(true)
+  // Cut short, it carries its whole as mouseover text, as the branch does.
+  expect(narrow.tips).toBeGreaterThan(wide.tips)
+})
+
 test('a long branch takes the room the row has left, and no more', async ($, on) => {
   // The row as the desktop drew it: #1234, APP, 5 comments, Address comments.
   const long = 'feature/1234-a-long-branch-name-that-does-not-fit-here'
